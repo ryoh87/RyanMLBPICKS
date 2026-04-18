@@ -1,0 +1,685 @@
+index.html
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trading Bases">
+<meta name="theme-color" content="#060a10">
+<title>Trading Bases</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060a10;--bg2:#080c14;--bg3:#0a0f18;
+  --b1:#0c1520;--b2:#162030;--b3:#1e2a38;
+  --t1:#c8d8e8;--t2:#6a8aa8;--t3:#3a5060;--t4:#1e3040;
+  --green:#00ff9d;--green2:#00cc77;--green3:#003a1a;
+  --yellow:#f0c040;--blue:#5a9ad8;--orange:#c06830;--red:#b05050;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
+}
+html,body{background:var(--bg);color:var(--t1);font-family:Georgia,serif;min-height:100vh;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+body{padding-bottom:calc(60px + var(--safe-bot))}
+
+#hdr{position:sticky;top:0;z-index:100;background:rgba(6,10,16,.97);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(–b1);padding:calc(var(–safe-top) + 14px) 16px 10px}
+.hdr-inner{max-width:660px;margin:0 auto}
+.hdr-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.hdr-label{font-size:8px;letter-spacing:3px;color:var(–green2);font-family:monospace;text-transform:uppercase;margin-bottom:2px}
+.hdr-title{font-size:21px;font-weight:700;color:#d8eaf8;letter-spacing:-.5px;line-height:1.1}
+.hdr-sub{font-size:9px;color:var(–t4);margin-top:2px}
+.hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.btn-run{background:var(–green3);border:1px solid rgba(0,255,157,.2);border-radius:7px;color:var(–green);padding:7px 14px;font-size:10px;font-family:monospace;letter-spacing:1px;cursor:pointer;-webkit-appearance:none;transition:opacity .15s}
+.btn-run:disabled{opacity:.5;cursor:default}
+.btn-run:active{opacity:.75}
+.btn-key{background:transparent;border:1px solid var(–b3);border-radius:6px;color:var(–t3);padding:4px 10px;font-size:9px;font-family:monospace;cursor:pointer;-webkit-appearance:none}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(–green);animation:blink 1.5s ease infinite;display:inline-block;margin-right:4px;vertical-align:middle}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+#filters{display:flex;gap:4px;margin-top:10px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+#filters::-webkit-scrollbar{display:none}
+.ftab{flex-shrink:0;border-radius:20px;padding:3px 11px;font-size:8px;font-family:monospace;cursor:pointer;white-space:nowrap;background:transparent;border:1px solid var(–b2);color:var(–t4);-webkit-appearance:none}
+.ftab.on{background:rgba(255,255,255,.05)}
+
+#main{max-width:660px;margin:0 auto;padding:14px 12px 0}
+
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
+.stat-box{background:var(–bg2);border:1px solid var(–b1);border-radius:10px;padding:10px 6px;text-align:center}
+.stat-val{font-size:18px;font-weight:700;font-family:monospace}
+.stat-lbl{font-size:8px;letter-spacing:.5px;color:var(–t4);margin-top:2px}
+
+.best-bet{background:rgba(0,255,157,.04);border:1px solid rgba(0,255,157,.14);border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.bb-tag{font-size:9px;color:#00aa55;font-family:monospace;letter-spacing:1px;margin-bottom:2px}
+.bb-team{font-size:13px;font-weight:700;color:var(–green)}
+.bb-detail{font-size:9px;color:var(–t4)}
+
+.games{display:flex;flex-direction:column;gap:8px}
+.card{border-radius:14px;overflow:hidden}
+.card-hdr{padding:13px 15px;cursor:pointer;-webkit-user-select:none;user-select:none}
+.card-hdr:active{opacity:.85}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.teams-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding-right:4px}
+.t-away{color:var(–blue);font-size:14px;font-weight:700}
+.t-at{color:var(–b3);font-size:11px}
+.t-home{color:var(–orange);font-size:14px;font-weight:700}
+.park-pill{font-size:8px;background:rgba(255,200,50,.07);border:1px solid rgba(255,200,50,.15);border-radius:4px;padding:1px 5px;color:#806020;font-family:monospace}
+.badge-col{text-align:right;flex-shrink:0;min-width:90px}
+.badge{font-size:9px;font-weight:700;font-family:monospace;letter-spacing:1px;text-transform:uppercase}
+.gt{font-size:9px;color:var(–t4);margin-top:1px}
+.ml-line{font-size:9px;color:var(–t3);font-family:monospace;margin-top:1px}
+
+.pitchers{font-size:10px;color:var(–t4);margin-bottom:7px;display:flex;flex-wrap:wrap;gap:3px 10px}
+.p-war{opacity:.7}
+
+.wb-labels{display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px}
+.wb-track{height:5px;border-radius:3px;background:#090d12;overflow:hidden;display:flex}
+.wb-away-bar{background:linear-gradient(90deg,#2a6aaa,#4a8ac8);transition:width 1s ease}
+.wb-home-bar{flex:1;background:linear-gradient(90deg,#a04820,#c06830)}
+
+.pick-row{display:flex;align-items:center;justify-content:space-between;margin-top:7px;flex-wrap:wrap;gap:4px}
+.pick-left{display:flex;align-items:center;gap:7px}
+.pick-tag{font-size:9px;color:var(–t4);font-family:monospace;letter-spacing:1px}
+.pick-team{font-size:13px;font-weight:700;font-family:monospace}
+.pick-prob{font-size:10px;color:var(–t4)}
+.kelly-pill{font-size:9px;font-family:monospace;background:rgba(0,255,157,.05);border:1px solid rgba(0,255,157,.12);border-radius:5px;padding:2px 7px;color:var(–t3)}
+
+.card-body{border-top:1px solid rgba(255,255,255,.04)}
+.tabs{display:flex;border-bottom:1px solid rgba(255,255,255,.04)}
+.tab-btn{flex:1;padding:7px 4px;font-size:9px;font-family:monospace;letter-spacing:1px;text-transform:uppercase;background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;color:var(–t4)}
+.tab-btn.on{border-bottom-color:currentColor}
+.tc{padding:12px 15px}
+
+.step{display:flex;align-items:center;gap:6px;margin:10px 0 5px}
+.step-n{width:18px;height:18px;border-radius:50%;background:rgba(0,255,157,.1);border:1px solid rgba(0,255,157,.2);display:flex;align-items:center;justify-content:center;font-size:9px;font-family:monospace;color:var(–green2);flex-shrink:0}
+.step-l{font-size:9px;letter-spacing:1.5px;color:var(–t4);font-family:monospace;text-transform:uppercase}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.sr-l{font-size:10px;color:var(–t3)}
+.sr-v{font-size:11px;font-family:monospace;color:var(–t2)}
+.sr-s{font-size:9px;color:var(–t4);margin-left:6px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.reasoning{font-size:11px;color:#4a7090;line-height:1.75;padding:4px 0}
+.kelly-note{margin-top:10px;padding:8px 10px;background:rgba(0,255,157,.04);border-radius:7px;font-size:9px;color:var(–t4);line-height:1.6}
+.odds-source{font-size:9px;color:var(–green2);font-family:monospace;padding:6px 0 2px;display:flex;align-items:center;gap:4px}
+
+#loading{text-align:center;padding:50px 20px;display:none}
+#loading.on{display:block}
+.spin{font-size:36px;display:inline-block;animation:spin 2s linear infinite;margin-bottom:14px}
+.load-t{color:var(–green2);font-family:monospace;font-size:11px;letter-spacing:2px;margin-bottom:6px}
+.load-s{color:var(–t4);font-size:11px;font-family:monospace;min-height:18px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#err-box{background:rgba(160,30,30,.08);border:1px solid rgba(160,30,30,.22);border-radius:10px;padding:14px;font-size:11px;color:var(–red);line-height:1.7;word-break:break-word;display:none}
+#err-box.on{display:block}
+#empty{text-align:center;padding:50px 20px;color:var(–t4);display:none}
+#empty.on{display:block}
+.disc{margin-top:18px;padding:10px 12px;background:rgba(255,255,255,.01);border:1px solid var(–b1);border-radius:8px;font-size:8px;color:var(–t4);line-height:1.7}
+
+/* Modal */
+#modal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.88);display:none;align-items:flex-end;padding-bottom:var(–safe-bot)}
+#modal.on{display:flex}
+.sheet{background:var(–bg3);border-radius:20px 20px 0 0;border-top:1px solid var(–b3);padding:22px 20px calc(20px + var(–safe-bot));width:100%;max-height:85vh;overflow-y:auto}
+.sheet-title{font-size:16px;font-weight:700;color:#d8eaf8;margin-bottom:14px}
+.key-row{margin-bottom:12px}
+.key-lbl{font-size:10px;color:var(–t3);font-family:monospace;letter-spacing:1px;margin-bottom:5px}
+.key-inp{width:100%;background:var(–bg2);border:1px solid var(–b3);border-radius:8px;color:var(–t1);padding:11px 13px;font-size:13px;font-family:monospace;-webkit-appearance:none}
+.key-inp:focus{outline:none;border-color:var(–green)}
+.key-hint{font-size:9px;color:var(–t4);margin-top:4px;line-height:1.5}
+.btn-save{width:100%;background:var(–green3);border:1px solid rgba(0,255,157,.3);border-radius:10px;color:var(–green);padding:13px;font-size:14px;font-family:monospace;letter-spacing:1px;cursor:pointer;margin-top:8px}
+.divider{height:1px;background:var(–b2);margin:16px 0}
+
+#install{position:fixed;bottom:calc(14px + var(–safe-bot));left:50%;transform:translateX(-50%);background:var(–green3);border:1px solid rgba(0,255,157,.25);border-radius:12px;padding:9px 16px;font-size:10px;color:var(–green);font-family:monospace;white-space:nowrap;z-index:50;display:none;cursor:pointer}
+#install.on{display:block}
+
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+</style>
+
+</head>
+<body>
+
+<div id="modal">
+  <div class="sheet">
+    <div class="sheet-title">🔑 API Keys</div>
+
+```
+<div class="key-row">
+  <div class="key-lbl">ANTHROPIC API KEY</div>
+  <input class="key-inp" id="ant-inp" type="password" placeholder="sk-ant-api03-…" autocomplete="off" spellcheck="false">
+  <div class="key-hint">Get free at console.anthropic.com — runs the Trading Bases formula</div>
+</div>
+
+<div class="divider"></div>
+
+<div class="key-row">
+  <div class="key-lbl">THE ODDS API KEY <span style="color:var(--green2);font-size:8px">LIVE DATA</span></div>
+  <input class="key-inp" id="odds-inp" type="password" placeholder="Your Odds API key…" autocomplete="off" spellcheck="false">
+  <div class="key-hint">Get free at the-odds-api.com — provides real MLB games & Vegas moneylines. Without this, AI estimates the schedule.</div>
+</div>
+
+<button class="btn-save" id="key-save">SAVE &amp; CONTINUE</button>
+<div class="key-hint" style="text-align:center;margin-top:8px">Keys saved locally on your device only</div>
+```
+
+  </div>
+</div>
+
+<div id="install">⬆ Share → "Add to Home Screen"</div>
+
+<div id="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-row">
+      <div>
+        <div class="hdr-label">◆ Joe Peta · Trading Bases</div>
+        <div class="hdr-title">MLB Win Probability</div>
+        <div class="hdr-sub" id="hdr-sub">Pythagorean · Cluster Luck · Log5 · SIERA · Kelly</div>
+      </div>
+      <div class="hdr-right">
+        <button class="btn-run" id="run-btn">RUN ANALYSIS</button>
+        <button class="btn-key" id="key-btn">⚙ KEYS</button>
+        <span style="font-size:8px;color:var(--t4);font-family:monospace" id="last-run"></span>
+      </div>
+    </div>
+    <div id="filters" style="display:none">
+      <button class="ftab on" data-f="ALL" style="color:var(--blue);border-color:var(--b3)">ALL (0)</button>
+      <button class="ftab" data-f="STRONG BET" style="color:var(--green)">STRONG BET (0)</button>
+      <button class="ftab" data-f="VALUE" style="color:var(--yellow)">VALUE (0)</button>
+      <button class="ftab" data-f="LEAN" style="color:var(--blue)">LEAN (0)</button>
+      <button class="ftab" data-f="PASS" style="color:#334">PASS (0)</button>
+    </div>
+  </div>
+</div>
+
+<div id="main">
+  <div id="loading">
+    <div class="spin">⚾</div>
+    <div class="load-t">TRADING BASES FORMULA</div>
+    <div class="load-s" id="load-s">Initializing…</div>
+  </div>
+  <div id="err-box"></div>
+  <div id="empty" class="on">Tap ⚙ KEYS to enter your API keys, then Run Analysis</div>
+  <div class="stats-grid" id="stats-grid" style="display:none">
+    <div class="stat-box"><div class="stat-val" id="s-games" style="color:var(--blue)">0</div><div class="stat-lbl">GAMES</div></div>
+    <div class="stat-box"><div class="stat-val" id="s-strong" style="color:var(--green)">0</div><div class="stat-lbl">STRONG</div></div>
+    <div class="stat-box"><div class="stat-val" id="s-value" style="color:var(--yellow)">0</div><div class="stat-lbl">VALUE+</div></div>
+    <div class="stat-box"><div class="stat-val" id="s-edge" style="color:var(--orange)">—</div><div class="stat-lbl">AVG EDGE</div></div>
+  </div>
+  <div id="best-bet" style="display:none" class="best-bet">
+    <div style="font-size:18px">🎯</div>
+    <div><div class="bb-tag">TODAY'S BEST BET</div><div class="bb-team" id="bb-team"></div><div class="bb-detail" id="bb-detail"></div></div>
+  </div>
+  <div class="games" id="games-list"></div>
+  <div class="disc" id="disc" style="display:none">Educational use only · Joe Peta's "Trading Bases" methodology · Not gambling advice · Estimates only · Past performance ≠ future results</div>
+</div>
+
+<script>
+// ── Keys ─────────────────────────────────────────────────
+let antKey  = localStorage.getItem('tb_ant')  || '';
+let oddsKey = localStorage.getItem('tb_odds') || '';
+
+// ── Config ────────────────────────────────────────────────
+const CONF = {
+  'STRONG BET':{ color:'#00ff9d', bg:'rgba(0,255,157,0.09)', border:'rgba(0,255,157,0.32)' },
+  'VALUE':     { color:'#f0c040', bg:'rgba(240,192,64,0.08)', border:'rgba(240,192,64,0.32)' },
+  'LEAN':      { color:'#5a9ad8', bg:'rgba(90,154,216,0.06)', border:'rgba(90,154,216,0.22)' },
+  'PASS':      { color:'#334',    bg:'rgba(20,25,35,0.4)',    border:'rgba(40,55,70,0.28)'  },
+};
+const ORDER = {'STRONG BET':0,'VALUE':1,'LEAN':2,'PASS':3};
+const fmt = (n,d=1) => n!=null&&n!=='' ? Number(n).toFixed(d) : '—';
+const pct = (n,d=1) => n!=null&&n!=='' ? (Number(n)*100).toFixed(d)+'%' : '—';
+const $ = id => document.getElementById(id);
+
+const LOAD_STEPS = [
+  'Fetching live MLB odds…',
+  'Pulling today\'s schedule…',
+  'Computing Pythagorean %…',
+  'Adjusting cluster luck…',
+  'Running Log5 formula…',
+  'Applying SIERA pitcher adj…',
+  'Calculating Kelly sizes…',
+  'Building analysis…'
+];
+
+const SYSTEM_PROMPT = `You are a baseball analytics engine implementing Joe Peta's COMPLETE Trading Bases methodology.
+
+You will receive real MLB game data from the Odds API including teams, game times, and Vegas moneylines.
+
+Using your knowledge of the 2026 MLB season (team RS/RA totals, pitcher SIERA/WAR, standings), apply the full formula:
+
+STEP 1 — PYTHAGOREAN WIN% (exponent 1.83):
+  PythagWin% = RS^1.83 / (RS^1.83 + RA^1.83)
+
+STEP 2 — CLUSTER LUCK:
+  clusterLuckWins = actualWins - pythagoreanExpectedWins
+  clusterAdjWin% = PythagWin% + (clusterLuckWins * 0.30 / gamesPlayed)
+
+STEP 3 — LOG5:
+  P(A beats B) = (A - A*B) / (A + B - 2*A*B)
+
+STEP 4 — SIERA PITCHER ADJUSTMENT:
+  skillsWAR = WAR * min(starts/10, 1.0)
+  Add (skillsWAR * 5) wins to team total, re-run Log5.
+
+STEP 5 — HOME FIELD: multiply home prob by 1.08, normalize.
+
+STEP 6 — PARK FACTOR: Coors=1.14, Petco/Oracle=0.92, etc.
+
+STEP 7 — EDGE vs REAL VEGAS LINE:
+  Use the actual moneyline provided to compute vegasImpliedHome.
+  edge = finalHomeWinPct - vegasImpliedHome  (if picking home)
+  or   = finalAwayWinPct - vegasImpliedAway  (if picking away)
+  Take the side with positive edge.
+  STRONG BET >5%, VALUE >2%, LEAN >0%, PASS <=0%
+
+STEP 8 — KELLY: kellyFull=edge/(1-modelProb), kellyHalf=kellyFull/2, cap recommendedBetPct at 5%.
+
+Return ONLY a raw JSON array, no markdown. Each element needs ALL fields:
+gameId, homeTeam, awayTeam, homeStarter, awayStarter, gameTime,
+homeRecord, awayRecord, homeRS, homeRA, awayRS, awayRA,
+homePythag, awayPythag,
+homeClusterLuckWins, awayClusterLuckWins, homeClusterAdj, awayClusterAdj,
+log5Base, homeStarterWAR, homeStarterRegressedWAR, homeSIERA,
+awayStarterWAR, awayStarterRegressedWAR, awaySIERA, log5AfterPitcher,
+parkFactor, parkName, parkAdjNote,
+finalHomeWinPct, finalAwayWinPct,
+vegasImpliedHome, vegasImpliedAway, homeMoneyline, awayMoneyline, edge,
+kellyFull, kellyHalf, recommendedBetPct,
+recommendedPick, pickTeamName, confidence, reasoning`;
+
+// ── Modal ─────────────────────────────────────────────────
+function openModal() {
+  $('ant-inp').value  = antKey;
+  $('odds-inp').value = oddsKey;
+  $('modal').classList.add('on');
+  $('modal').style.display = 'flex';
+  setTimeout(()=>{ if(!antKey) $('ant-inp').focus(); else $('odds-inp').focus(); }, 150);
+}
+function closeModal() {
+  $('modal').classList.remove('on');
+  $('modal').style.display = 'none';
+}
+$('modal').addEventListener('click', e => { if(e.target===$('modal')) closeModal(); });
+$('key-btn').addEventListener('click', openModal);
+$('key-save').addEventListener('click', () => {
+  const a = $('ant-inp').value.trim();
+  const o = $('odds-inp').value.trim();
+  if(!a){ alert('Anthropic API key is required'); return; }
+  antKey = a; oddsKey = o;
+  localStorage.setItem('tb_ant', a);
+  if(o) localStorage.setItem('tb_odds', o);
+  closeModal();
+  updateSubtitle();
+  $('empty').textContent = "Keys saved! Tap Run Analysis to load today's games.";
+  on('empty');
+});
+
+function updateSubtitle() {
+  $('hdr-sub').innerHTML = oddsKey
+    ? '<span class="live-dot"></span>Live Odds · Pythagorean · Cluster Luck · Log5 · SIERA · Kelly'
+    : 'Pythagorean · Cluster Luck · Log5 · SIERA · Kelly';
+}
+
+// ── State helpers ─────────────────────────────────────────
+let allGames = [], currentFilter = 'ALL', loadTimer = null, loadIdx = 0;
+const on  = id => { const e=$(id); if(e){e.classList.add('on');e.style.display='';} };
+const off = id => { const e=$(id); if(e){e.classList.remove('on');e.style.display='none';} };
+function showErr(msg){ $('err-box').innerHTML='<strong>⚠️ Error</strong><br>'+msg; on('err-box'); }
+
+// ── Filter tabs ───────────────────────────────────────────
+document.querySelectorAll('.ftab').forEach(b => {
+  b.addEventListener('click', () => {
+    currentFilter = b.dataset.f;
+    document.querySelectorAll('.ftab').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    renderGames();
+  });
+});
+
+// ── Odds API fetch ────────────────────────────────────────
+async function fetchOddsData() {
+  if(!oddsKey) return null;
+  try {
+    const url = `https://api.the-odds-api.com/v4/sports/baseball_mlb/odds/?apiKey=${oddsKey}&regions=us&markets=h2h&oddsFormat=american&dateFormat=iso`;
+    const res = await fetch(url);
+    if(!res.ok) {
+      const t = await res.text();
+      console.warn('Odds API error:', res.status, t.slice(0,200));
+      return null;
+    }
+    const data = await res.json();
+    return data;
+  } catch(e) {
+    console.warn('Odds API fetch failed:', e.message);
+    return null;
+  }
+}
+
+function parseOddsData(oddsData) {
+  if(!oddsData || !Array.isArray(oddsData)) return [];
+  return oddsData.map(game => {
+    const home = game.home_team;
+    const away = game.away_team;
+    let homeML = null, awayML = null;
+    try {
+      const bk = game.bookmakers?.[0];
+      const mkt = bk?.markets?.find(m=>m.key==='h2h');
+      if(mkt) {
+        homeML = mkt.outcomes?.find(o=>o.name===home)?.price ?? null;
+        awayML = mkt.outcomes?.find(o=>o.name===away)?.price ?? null;
+      }
+    } catch{}
+    const dt = new Date(game.commence_time);
+    const timeStr = dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZoneName:'short'});
+    return { gameId:game.id, homeTeam:home, awayTeam:away, gameTime:timeStr, homeMoneyline:homeML, awayMoneyline:awayML };
+  });
+}
+
+function mlToImplied(ml) {
+  if(ml == null) return null;
+  return ml > 0 ? 100/(ml+100) : Math.abs(ml)/(Math.abs(ml)+100);
+}
+
+// ── Main fetch ────────────────────────────────────────────
+$('run-btn').addEventListener('click', runAnalysis);
+
+async function runAnalysis() {
+  if(!antKey){ openModal(); return; }
+  $('run-btn').disabled = true;
+  $('run-btn').textContent = 'ANALYZING…';
+  on('loading'); off('err-box'); off('empty');
+  $('stats-grid').style.display = 'none';
+  $('best-bet').style.display = 'none';
+  $('disc').style.display = 'none';
+  $('filters').style.display = 'none';
+  $('games-list').innerHTML = '';
+  $('last-run').textContent = '';
+  allGames = [];
+
+  loadIdx = 0;
+  $('load-s').textContent = LOAD_STEPS[0];
+  clearInterval(loadTimer);
+  loadTimer = setInterval(()=>{ loadIdx=(loadIdx+1)%LOAD_STEPS.length; $('load-s').textContent=LOAD_STEPS[loadIdx]; }, 900);
+
+  try {
+    // Step 1: Fetch real odds if key provided
+    let oddsGames = [];
+    let oddsContext = '';
+    if(oddsKey) {
+      const raw = await fetchOddsData();
+      oddsGames = parseOddsData(raw);
+      if(oddsGames.length) {
+        oddsContext = `\n\nREAL ODDS API DATA (use these exact teams, times, and moneylines):\n${JSON.stringify(oddsGames, null, 2)}\n\nFor each game above, look up the 2026 season stats and run the full Trading Bases formula. Use the real moneylines for edge calculation.`;
+      }
+    }
+
+    const today = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    const userMsg = oddsContext
+      ? `Today is ${today}. Analyze these real MLB games using Trading Bases methodology:${oddsContext}\n\nReturn ONLY the raw JSON array.`
+      : `Today is ${today}. Generate today's full MLB schedule with Trading Bases analysis (10-15 games). Use your 2026 MLB knowledge. Return ONLY the raw JSON array.`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': antKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 6000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role:'user', content: userMsg }]
+      })
+    });
+
+    const bodyText = await res.text();
+    let data;
+    try { data = JSON.parse(bodyText); }
+    catch { throw new Error('HTTP '+res.status+': '+bodyText.slice(0,250)); }
+    if(!res.ok||data.error) throw new Error('API '+(data.error?.message||res.status+': '+bodyText.slice(0,200)));
+    if(!data.content?.length) throw new Error('Empty API response');
+
+    const text = data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    const m = text.match(/\[[\s\S]*\]/);
+    if(!m) throw new Error('No JSON array in response: '+text.slice(0,300));
+
+    let parsed;
+    try { parsed = JSON.parse(m[0]); }
+    catch(e) { throw new Error('JSON parse: '+e.message); }
+    if(!Array.isArray(parsed)||!parsed.length) throw new Error('Empty games array');
+
+    // Merge real moneylines back in if we have them
+    if(oddsGames.length) {
+      parsed.forEach(g => {
+        const match = oddsGames.find(o =>
+          o.homeTeam.toLowerCase().includes(g.homeTeam?.toLowerCase()?.split(' ').pop()||'') ||
+          g.homeTeam?.toLowerCase().includes(o.homeTeam?.toLowerCase()?.split(' ').pop()||'')
+        );
+        if(match) {
+          if(match.homeMoneyline != null) g.homeMoneyline = match.homeMoneyline;
+          if(match.awayMoneyline != null) g.awayMoneyline = match.awayMoneyline;
+          if(!g.vegasImpliedHome && match.homeMoneyline) g.vegasImpliedHome = mlToImplied(match.homeMoneyline);
+          if(!g.vegasImpliedAway && match.awayMoneyline) g.vegasImpliedAway = mlToImplied(match.awayMoneyline);
+        }
+      });
+    }
+
+    parsed.sort((a,b)=>(ORDER[a.confidence]??3)-(ORDER[b.confidence]??3));
+    allGames = parsed;
+    $('last-run').textContent = new Date().toLocaleTimeString();
+    updateCounts();
+    renderGames();
+
+  } catch(e) {
+    showErr(e.message||String(e));
+  } finally {
+    clearInterval(loadTimer);
+    off('loading');
+    $('run-btn').disabled = false;
+    $('run-btn').textContent = 'RUN ANALYSIS';
+  }
+}
+
+function updateCounts() {
+  const c={ALL:allGames.length,'STRONG BET':0,VALUE:0,LEAN:0,PASS:0};
+  allGames.forEach(g=>{if(c[g.confidence]!==undefined)c[g.confidence]++;});
+  document.querySelectorAll('.ftab').forEach(b=>{ b.textContent=b.dataset.f+' ('+(c[b.dataset.f]??0)+')'; });
+}
+
+function renderGames() {
+  const games = currentFilter==='ALL' ? allGames : allGames.filter(g=>g.confidence===currentFilter);
+  $('games-list').innerHTML = '';
+  if(!games.length){
+    on('empty'); $('empty').textContent='No games match this filter.';
+    $('stats-grid').style.display='none'; $('best-bet').style.display='none';
+    $('disc').style.display='none'; $('filters').style.display='none';
+    return;
+  }
+  off('empty');
+  $('stats-grid').style.display='grid'; $('filters').style.display='flex'; $('disc').style.display='block';
+  const strong=allGames.filter(g=>g.confidence==='STRONG BET').length;
+  const value=allGames.filter(g=>g.confidence==='STRONG BET'||g.confidence==='VALUE').length;
+  const pos=allGames.filter(g=>g.edge>0);
+  $('s-games').textContent=allGames.length;
+  $('s-strong').textContent=strong;
+  $('s-value').textContent=value;
+  $('s-edge').textContent=pos.length?fmt(pos.reduce((s,g)=>s+(g.edge||0),0)/pos.length)+'%':'—';
+  const top=allGames.find(g=>g.confidence==='STRONG BET');
+  if(top){
+    $('bb-team').textContent=top.pickTeamName;
+    $('bb-detail').textContent=top.awayTeam+' @ '+top.homeTeam+' · '+pct(top.recommendedPick==='HOME'?top.finalHomeWinPct:top.finalAwayWinPct)+' · +'+fmt(top.edge)+'% edge · Bet '+fmt(top.recommendedBetPct)+'%';
+    $('best-bet').style.display='flex';
+  } else { $('best-bet').style.display='none'; }
+  games.forEach((g,i)=>$('games-list').appendChild(buildCard(g,i)));
+}
+
+// ── Card builder ──────────────────────────────────────────
+function buildCard(g, idx) {
+  const cfg=CONF[g.confidence]||CONF['PASS'];
+  const ap=((g.finalAwayWinPct||0)*100).toFixed(1);
+  const hp=((g.finalHomeWinPct||0)*100).toFixed(1);
+  const pickP=pct(g.recommendedPick==='HOME'?g.finalHomeWinPct:g.finalAwayWinPct);
+  const edgeStr=g.confidence!=='PASS'&&g.edge!=null?' +'+fmt(g.edge)+'%':'';
+  const isPark=g.parkFactor&&Math.abs(g.parkFactor-1)>0.03;
+  const parkLbl=g.parkFactor>1.05?'🏔 HITTER':'🛡 PITCHER';
+  const hasRealOdds=g.homeMoneyline!=null;
+
+  const el=document.createElement('div');
+  el.className='card';
+  el.style.cssText=`border:1px solid ${cfg.border};background:${cfg.bg};animation:rise .4s ease ${idx*.055}s both`;
+
+  let isOpen=false, activeTab='formula';
+
+  el.innerHTML=`
+    <div class="card-hdr" id="ch${idx}">
+      <div class="card-top">
+        <div class="teams-row">
+          <span class="t-away">${g.awayTeam}</span>
+          <span class="t-at">@</span>
+          <span class="t-home">${g.homeTeam}</span>
+          ${isPark?`<span class="park-pill">${parkLbl}</span>`:''}
+        </div>
+        <div class="badge-col">
+          <div class="badge" style="color:${cfg.color}">${g.confidence}${edgeStr}</div>
+          ${g.gameTime?`<div class="gt">${g.gameTime}</div>`:''}
+          ${hasRealOdds?`<div class="ml-line">${g.awayMoneyline>0?'+':''}${g.awayMoneyline} / ${g.homeMoneyline>0?'+':''}${g.homeMoneyline}</div>`:''}
+        </div>
+      </div>
+      <div class="pitchers">
+        <span>⚾ ${g.awayStarter||'TBD'} <span class="p-war">SIERA ${fmt(g.awaySIERA)} · WAR ${fmt(g.awayStarterWAR)}</span></span>
+        <span style="color:var(--b3)">vs</span>
+        <span>⚾ ${g.homeStarter||'TBD'} <span class="p-war">SIERA ${fmt(g.homeSIERA)} · WAR ${fmt(g.homeStarterWAR)}</span></span>
+      </div>
+      <div class="wb-labels">
+        <span style="color:var(--blue)">${g.awayTeam} ${ap}%</span>
+        <span style="color:var(--orange)">${hp}% ${g.homeTeam}</span>
+      </div>
+      <div class="wb-track">
+        <div class="wb-away-bar" style="width:${ap}%"></div>
+        <div class="wb-home-bar"></div>
+      </div>
+      <div class="pick-row">
+        ${g.recommendedPick!=='PASS'?`
+          <div class="pick-left">
+            <span class="pick-tag">PICK</span>
+            <span class="pick-team" style="color:${cfg.color}">${g.pickTeamName}</span>
+            <span class="pick-prob">${pickP}</span>
+          </div>
+          ${g.recommendedBetPct!=null?`<span class="kelly-pill">BET ${fmt(g.recommendedBetPct)}%</span>`:''}`
+        :`<span style="font-size:10px;color:var(--t4)">No edge — pass</span>`}
+      </div>
+      ${hasRealOdds?`<div class="odds-source"><span class="live-dot"></span>Real Vegas odds via Odds API</div>`:''}
+    </div>
+    <div class="card-body" id="cb${idx}" style="display:none">
+      <div class="tabs">
+        <button class="tab-btn on" data-t="formula" style="color:${cfg.color}">Formula</button>
+        <button class="tab-btn" data-t="matchup">Matchup</button>
+        <button class="tab-btn" data-t="kelly">Kelly</button>
+      </div>
+      <div class="tc" id="tc${idx}">${fmtFormula(g,cfg)}</div>
+    </div>`;
+
+  el.querySelector(`#ch${idx}`).addEventListener('click',()=>{
+    isOpen=!isOpen;
+    el.querySelector(`#cb${idx}`).style.display=isOpen?'':'none';
+  });
+  el.querySelectorAll('.tab-btn').forEach(b=>{
+    b.addEventListener('click',e=>{
+      e.stopPropagation();
+      activeTab=b.dataset.t;
+      el.querySelectorAll('.tab-btn').forEach(x=>{x.classList.remove('on');x.style.color='var(--t4)';});
+      b.classList.add('on'); b.style.color=cfg.color;
+      el.querySelector(`#tc${idx}`).innerHTML=
+        activeTab==='formula'?fmtFormula(g,cfg):activeTab==='matchup'?fmtMatchup(g):fmtKelly(g,cfg);
+    });
+  });
+  return el;
+}
+
+const stepH = (n,l) => `<div class="step"><div class="step-n">${n}</div><span class="step-l">${l}</span></div>`;
+const srH = (l,v,s='',hl='') => `<div class="sr"><span class="sr-l">${l}</span><div><span class="sr-v"${hl?` style="color:${hl}"`:''}>  ${v}</span>${s?`<span class="sr-s">${s}</span>`:''}</div></div>`;
+const luckCol = v => v>1.5?'#f0c040':v<-1.5?'#a05050':'';
+
+function fmtFormula(g,cfg){ return `
+  ${stepH('1','Pythagorean Win%')}
+  <div class="g2">
+    ${srH(g.awayTeam+' Pythag',pct(g.awayPythag),g.awayRS+'RS/'+g.awayRA+'RA')}
+    ${srH(g.homeTeam+' Pythag',pct(g.homePythag),g.homeRS+'RS/'+g.homeRA+'RA')}
+  </div>
+  ${stepH('2','Cluster Luck')}
+  <div class="g2">
+    ${srH(g.awayTeam+' luck',(g.awayClusterLuckWins>0?'+':'')+fmt(g.awayClusterLuckWins)+' W','',luckCol(g.awayClusterLuckWins))}
+    ${srH(g.homeTeam+' luck',(g.homeClusterLuckWins>0?'+':'')+fmt(g.homeClusterLuckWins)+' W','',luckCol(g.homeClusterLuckWins))}
+    ${srH(g.awayTeam+' adj',pct(g.awayClusterAdj))}
+    ${srH(g.homeTeam+' adj',pct(g.homeClusterAdj))}
+  </div>
+  ${stepH('3','Log5 H2H')}
+  ${srH('Log5 base (home)',pct(g.log5Base),'(A–A×B)/(A+B–2AB)')}
+  ${stepH('4','SIERA Pitcher Adj')}
+  <div class="g2">
+    ${srH((g.awayStarter||'Away').split(' ').pop()+' SIERA',fmt(g.awaySIERA))}
+    ${srH((g.homeStarter||'Home').split(' ').pop()+' SIERA',fmt(g.homeSIERA))}
+    ${srH('Away WAR (reg)',fmt(g.awayStarterRegressedWAR))}
+    ${srH('Home WAR (reg)',fmt(g.homeStarterRegressedWAR))}
+  </div>
+  ${srH('Log5 after pitchers',pct(g.log5AfterPitcher),'','#5a9ad8')}
+  ${stepH('5+6','HFA + Park')}
+  ${srH('Home field boost','+8%')}
+  ${g.parkFactor?srH('Park ('+g.parkName+')',fmt(g.parkFactor)+'×',g.parkAdjNote||''):''}
+  ${srH('Final home prob',pct(g.finalHomeWinPct),'',cfg.color)}
+`;}
+
+function fmtMatchup(g){ return `
+  ${stepH('📊','Season Stats')}
+  <div class="g2">
+    ${srH(g.awayTeam+' record',g.awayRecord||'—')}
+    ${srH(g.homeTeam+' record',g.homeRecord||'—')}
+  </div>
+  ${g.homeMoneyline!=null?`
+    ${stepH('💹','Vegas Lines')}
+    <div class="g2">
+      ${srH(g.awayTeam+' ML',(g.awayMoneyline>0?'+':'')+g.awayMoneyline)}
+      ${srH(g.homeTeam+' ML',(g.homeMoneyline>0?'+':'')+g.homeMoneyline)}
+      ${srH(g.awayTeam+' implied',pct(g.vegasImpliedAway))}
+      ${srH(g.homeTeam+' implied',pct(g.vegasImpliedHome))}
+    </div>`:''}
+  ${stepH('📝','Analysis')}
+  <div class="reasoning">${g.reasoning||'—'}</div>
+`;}
+
+function fmtKelly(g,cfg){
+  const modelP=g.recommendedPick==='HOME'?g.finalHomeWinPct:g.finalAwayWinPct;
+  return `
+  ${stepH('💰','Kelly Criterion')}
+  ${srH('Model prob',pct(modelP),'','#5a9ad8')}
+  ${srH('Vegas implied',pct(g.recommendedPick==='HOME'?g.vegasImpliedHome:g.vegasImpliedAway))}
+  ${g.homeMoneyline!=null?srH('Moneyline',(g.recommendedPick==='HOME'?(g.homeMoneyline>0?'+':'')+g.homeMoneyline:(g.awayMoneyline>0?'+':'')+g.awayMoneyline),'real odds'):''}
+  ${srH('Edge','+'+fmt(g.edge)+'%','',cfg.color)}
+  <div style="height:1px;background:rgba(255,255,255,.04);margin:8px 0"></div>
+  ${srH('Full Kelly',fmt((g.kellyFull||0)*100)+'% bankroll')}
+  ${srH('Half Kelly',fmt((g.kellyHalf||0)*100)+'% bankroll','','#00cc77')}
+  ${srH('Capped bet',fmt(g.recommendedBetPct)+'% bankroll','','#00ff9d')}
+  <div class="kelly-note">Half-Kelly minimizes ruin risk. Edge must persist over 50+ games for statistical significance.</div>
+`;}
+
+// ── iOS install ───────────────────────────────────────────
+if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!navigator.standalone){
+  setTimeout(()=>{ on('install'); setTimeout(()=>off('install'),9000); },3000);
+}
+$('install').addEventListener('click',()=>off('install'));
+
+// ── Service worker ────────────────────────────────────────
+if('serviceWorker' in navigator){
+  const sw=`const C='tb-v3';self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',e=>{if(e.request.url.includes('anthropic.com')||e.request.url.includes('odds-api.com'))return;e.respondWith(caches.open(C).then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{c.put(e.request,res.clone());return res;}))));});`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
+}
+
+// ── Init ──────────────────────────────────────────────────
+updateSubtitle();
+if(!antKey){ setTimeout(openModal,600); }
+else { $('empty').textContent="Tap Run Analysis to load today's games"; on('empty'); }
+</script>
+
+</body>
+</html>
